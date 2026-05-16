@@ -2,12 +2,13 @@
 // @name         Mercari Beyblade TW Finder
 // @name:zh-TW   Mercari 正版陀螺台灣可買搜尋助手
 // @namespace    https://github.com/your-name/mercari-beyblade-tw-finder
-// @version      0.1.0
+// @version      0.1.1
 // @description  Auto-search Mercari for newest on-sale official Beyblade listings, then highlight affordable results for Taiwan buyers.
 // @description:zh-TW 打開 Mercari 時自動搜尋最新上架、尚未售完、價格不過度溢價的正版陀螺，方便台灣買家挑選。
 // @author       Kyle
 // @match        https://jp.mercari.com/*
 // @match        https://gl.mercari.com/*
+// @match        https://tw.mercari.com/*
 // @grant        GM_getValue
 // @grant        GM_setValue
 // @grant        GM_addStyle
@@ -205,7 +206,8 @@
   }
 
   function buildSearchUrl() {
-    const url = new URL("/search", location.origin);
+    const searchPath = location.hostname === "tw.mercari.com" ? "/zh-hant/search" : "/search";
+    const url = new URL(searchPath, location.origin);
     url.searchParams.set("keyword", state.config.keyword.trim() || DEFAULT_CONFIG.keyword);
     url.searchParams.set("status", "on_sale");
     url.searchParams.set("sort", "created_time");
@@ -220,10 +222,10 @@
     const path = location.pathname;
     const params = new URLSearchParams(location.search);
     const hasKeyword = Boolean(params.get("keyword"));
-    const isHome = path === "/" || path === "/tw" || path === "/ja";
-    const isUnfilteredSearch = path.startsWith("/search") && !hasKeyword;
+    const isHome = path === "/" || path === "/tw" || path === "/ja" || path === "/zh-hant";
+    const isUnfilteredSearch = path.startsWith("/search") || path.startsWith("/zh-hant/search");
 
-    if (isHome || isUnfilteredSearch) {
+    if (isHome || (isUnfilteredSearch && !hasKeyword)) {
       sessionStorage.setItem("mbtf.redirected", "1");
       location.assign(buildSearchUrl());
     }
